@@ -87,3 +87,40 @@ func GetLocationAreaDetail(areaName string, cache *pokeCache.Cache) (LocationAre
 	cache.Add(url, cachedbody)
 	return results, nil
 }
+
+func GetPokemonDetail(pokemonName string, cache *pokeCache.Cache) (PokemonResponse, error) {
+	url := baseUrl + "/pokemon/" + pokemonName
+
+	cachedResponseBody, cacheHit := cache.Get(url)
+	if cacheHit {
+		fmt.Println("Cache Hit!")
+		results := PokemonResponse{}
+		err := json.Unmarshal(cachedResponseBody, &results)
+		if err != nil {
+			return PokemonResponse{}, errors.New("error unmarshaling cache")
+		}
+		return results, nil
+	}
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return PokemonResponse{}, errors.New("HTTP error")
+	}
+	if resp.StatusCode != http.StatusOK {
+		return PokemonResponse{}, errors.New("error reaching api")
+	}
+	decoder := json.NewDecoder(resp.Body)
+	results := PokemonResponse{}
+	err = decoder.Decode(&results)
+	if err != nil {
+		return PokemonResponse{}, errors.New("error decoding api response")
+	}
+
+	cachedbody, err := json.Marshal(results)
+	if err != nil {
+		return results, errors.New("cannot cache results")
+	}
+	// update cache with response body
+	cache.Add(url, cachedbody)
+	return results, nil
+}

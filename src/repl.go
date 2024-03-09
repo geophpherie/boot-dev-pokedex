@@ -7,20 +7,25 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jbeyer16/boot-dev-pokedex/src/internal/pokeApi"
 	"github.com/jbeyer16/boot-dev-pokedex/src/internal/pokeCache"
 )
 
 type config struct {
-	Next  string
-	Prev  string
-	Cache *pokeCache.Cache
+	Next               string
+	Prev               string
+	Cache              *pokeCache.Cache
+	CurrentArea        string
+	CurrentAreaPokemon []string
+	Pokedex            map[string]pokeApi.PokemonResponse
 }
 
 func repl() error {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	appConfig := config{}
-	appConfig.Cache = pokeCache.NewCache(time.Duration(5) * time.Second)
+	appConfig.Cache = pokeCache.NewCache(time.Duration(60) * time.Second)
+	appConfig.Pokedex = map[string]pokeApi.PokemonResponse{}
 
 	for {
 		fmt.Print("pokedex > ")
@@ -43,7 +48,7 @@ func repl() error {
 			continue
 		}
 
-		err := cmd.callback(&appConfig, params[1])
+		err := cmd.callback(&appConfig, params[1:]...)
 		if err != nil {
 			fmt.Printf("ERROR: %v\n", err)
 		}
