@@ -37,7 +37,7 @@ func repl() error {
 			continue
 		}
 
-		params := strings.Split(words, " ")
+		params := cleanInput(words)
 
 		if len(params) == 1 {
 			params = append(params, "")
@@ -53,4 +53,20 @@ func repl() error {
 			fmt.Printf("ERROR: %v\n", err)
 		}
 	}
+}
+
+func cleanInput(text string) []string {
+
+	words := strings.Split(strings.TrimSpace(text), " ")
+	clean_words := []string{}
+
+	for _, word := range words {
+		if strings.Contains(word, " ") || word == "" {
+			continue
+		}
+
+		clean_words = append(clean_words, word)
+	}
+
+	return clean_words
 }
